@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { createTimeline } from '../dist/js/visualizers/timeline.js';
+import { createTimeline } from '../classical-cipher-lab/js/visualizers/timeline.js';
 
 function fakeClock() {
   let nextId = 1;
@@ -67,4 +67,16 @@ test('loading new steps cancels playback from the previous route', () => {
   assert.ok(clock.cleared.includes(oldTimer));
   assert.equal(timeline.getState().step.id, 'new');
   assert.equal(timeline.getState().status, 'ready');
+});
+
+test('switching away from a 256-step animation cancels stale playback', () => {
+  const clock = fakeClock();
+  const timeline = createTimeline(() => {}, clock);
+  timeline.load(Array.from({ length: 256 }, (_, id) => ({ id })));
+  timeline.play();
+  const staleTimer = [...clock.callbacks.keys()][0];
+  timeline.load([{ id: 'next-route' }]);
+  assert.ok(clock.cleared.includes(staleTimer));
+  assert.equal(clock.callbacks.size, 0);
+  assert.equal(timeline.getState().step.id, 'next-route');
 });

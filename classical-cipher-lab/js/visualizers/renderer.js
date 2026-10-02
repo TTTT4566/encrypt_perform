@@ -17,6 +17,22 @@ function icon(name) {
   return `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[name] ?? ''}</svg>`;
 }
 
+function modesFor(meta) {
+  return Array.isArray(meta.modes) && meta.modes.length ? meta.modes : ['encrypt', 'decrypt'];
+}
+
+function modeLabel(mode) {
+  return ({ encrypt: '加密', decrypt: '解密', hash: '哈希' })[mode] ?? mode;
+}
+
+function inputLabel(mode) {
+  return ({ encrypt: '明文', decrypt: '密文', hash: '摘要内容' })[mode] ?? '输入';
+}
+
+function actionLabel(mode) {
+  return mode === 'hash' ? '生成摘要' : '运行实验';
+}
+
 export function renderIntro(algorithms) {
   const cards = algorithms.map(({ meta }) => `
     <a class="algorithm-card" href="#${meta.id}">
@@ -26,19 +42,19 @@ export function renderIntro(algorithms) {
     </a>`).join('');
   return `
     <section class="intro-page">
-      <div class="eyebrow"><span></span>CLASSICAL CRYPTOGRAPHY</div>
+      <div class="eyebrow"><span></span>INTERACTIVE CRYPTOGRAPHY</div>
       <div class="intro-heading">
-        <div><h1>从凯撒位移到机械转轮</h1><p>选择一个算法，修改明文和密钥，然后逐步观察字符如何被变换。每个实验都可以反向解密。</p></div>
-        <div class="intro-count"><strong>08</strong><span>交互实验</span></div>
+        <div><h1>从古典密码到现代密码学</h1><p>选择一个算法，修改输入与密钥，然后逐步观察字符、字节、矩阵和寄存器如何变化。</p></div>
+        <div class="intro-count"><strong>${String(algorithms.length).padStart(2, '0')}</strong><span>交互实验</span></div>
       </div>
-      <div class="learning-path"><strong>建议路径</strong><span>替代规则</span><i></i><span>矩阵与置换</span><i></i><span>密钥流与机械结构</span></div>
+      <div class="learning-path"><strong>建议路径</strong><span>替代与置换</span><i></i><span>分组与流密码</span><i></i><span>公钥与哈希函数</span></div>
       <div class="algorithm-grid">${cards}</div>
-      <aside class="info-callout"><strong>开始前请注意</strong><p>这里使用较小、直观的参数帮助理解原理。所有实现仅用于教学，不适用于真实安全通信。</p></aside>
+      <aside class="info-callout"><strong>开始前请注意</strong><p>这里使用直观参数帮助理解原理。所有实现仅用于教学，不适用于真实安全通信。</p></aside>
     </section>`;
 }
 
 function renderKeyFields(meta) {
-  return meta.keyFields.map((field) => `
+  return (meta.keyFields ?? []).map((field) => `
     <label class="field ${meta.id === 'hill' ? 'field-compact' : ''}">
       <span>${escapeHtml(field.label)}</span>
       <input name="${escapeHtml(field.name)}" type="${field.type}" value="${escapeHtml(field.value)}"
@@ -49,8 +65,12 @@ function renderKeyFields(meta) {
 
 export function renderAlgorithmPage(algorithm) {
   const { meta } = algorithm;
+  const modes = modesFor(meta);
+  const initialMode = modes[0];
+  const showPreserveOption = meta.showPreserveOption ?? true;
+  const modeButtons = modes.map((mode, index) => `<button type="button" class="mode-button${index === 0 ? ' active' : ''}" data-mode="${mode}" aria-pressed="${index === 0}">${modeLabel(mode)}</button>`).join('');
   return `
-    <article class="algorithm-page" data-algorithm="${meta.id}">
+    <article class="algorithm-page" data-algorithm="${meta.id}" data-modes="${modes.join(',')}">
       <header class="algorithm-header">
         <div><div class="eyebrow"><span></span>${escapeHtml(meta.category)} · EXPERIMENT ${meta.code}</div><h1>${escapeHtml(meta.title)}</h1><p>${escapeHtml(meta.summary)}</p></div>
         <div class="formula-card"><span>核心规则</span><code>${escapeHtml(meta.formula)}</code></div>
@@ -58,15 +78,14 @@ export function renderAlgorithmPage(algorithm) {
       <section class="workbench" aria-label="${escapeHtml(meta.title)}实验台">
         <form class="control-panel" id="cipher-form" novalidate>
           <div class="panel-heading"><span>${icon('flask')}</span><div><strong>实验参数</strong><small>修改后重新运行</small></div></div>
-          <div class="mode-switch" role="group" aria-label="运算模式">
-            <button type="button" class="mode-button active" data-mode="encrypt">加密</button><button type="button" class="mode-button" data-mode="decrypt">解密</button>
-            <input type="hidden" name="mode" value="encrypt" />
+          <div class="mode-switch mode-count-${modes.length}" role="group" aria-label="运算模式">
+            ${modeButtons}<input type="hidden" name="mode" value="${initialMode}" />
           </div>
-          <label class="field field-message"><span id="message-label">明文</span><textarea name="input" rows="4" spellcheck="false">${escapeHtml(meta.defaults.input)}</textarea></label>
+          <label class="field field-message"><span id="message-label">${inputLabel(initialMode)}</span><textarea name="input" rows="4" spellcheck="false">${escapeHtml(meta.defaults.input)}</textarea></label>
           <div class="key-fields ${meta.id === 'hill' ? 'matrix-fields' : ''}">${renderKeyFields(meta)}</div>
-          <label class="check-field"><input type="checkbox" name="preserve" ${meta.defaults.preserve ? 'checked' : ''}/><span>保留空格、数字和标点</span></label>
+          ${showPreserveOption ? `<label class="check-field"><input type="checkbox" name="preserve" ${meta.defaults.preserve ? 'checked' : ''}/><span>保留空格、数字和标点</span></label>` : ''}
           <p class="form-error" id="form-error" role="alert"></p>
-          <div class="primary-actions"><button class="primary-button" type="submit" data-action="run">${icon('play')}运行实验</button><button class="secondary-button" type="button" data-action="preset">载入示例</button></div>
+          <div class="primary-actions"><button class="primary-button" type="submit" data-action="run">${icon('play')}<span>${actionLabel(initialMode)}</span></button><button class="secondary-button" type="button" data-action="preset">载入示例</button></div>
         </form>
         <div class="stage-panel">
           <div class="stage-toolbar">
@@ -78,8 +97,8 @@ export function renderAlgorithmPage(algorithm) {
             </div>
             <label class="speed-control"><span>速度</span><input type="range" name="speed" min="180" max="1500" step="110" value="900" aria-label="动画速度" /><strong>1.0×</strong></label>
           </div>
-          <div class="visual-stage" id="visual-stage" aria-live="polite"><div class="stage-empty"><span>∴</span><strong>准备实验</strong><p>点击“运行实验”生成逐步动画。</p></div></div>
-          <div class="result-strip" id="result-strip" hidden><div><span id="result-label">加密结果</span><output id="result-output"></output></div><button type="button" class="copy-button" data-action="copy">${icon('copy')}复制</button></div>
+          <div class="visual-stage" id="visual-stage" aria-live="polite"><div class="stage-empty"><span>∴</span><strong>准备实验</strong><p>点击“${actionLabel(initialMode)}”生成逐步动画。</p></div></div>
+          <div class="result-strip" id="result-strip" hidden><div><span id="result-label">${initialMode === 'hash' ? '摘要结果' : '加密结果'}</span><output id="result-output"></output></div><button type="button" class="copy-button" data-action="copy">${icon('copy')}复制</button></div>
         </div>
       </section>
       <section class="explanation-grid">
@@ -113,10 +132,68 @@ function renderBits(data) {
 }
 function renderRotor(data) { return `<div class="rotor-visual"><div class="rotor-stack">${data.after.map((position, index) => `<div class="rotor"><small>转轮 ${index + 1}</small><strong>${position}</strong><span>${data.before[index]} → ${position}</span></div>`).join('')}</div><div class="signal-path">${data.path.map((letter, index) => `<span class="${index === 0 ? 'source' : index === data.path.length - 1 ? 'target' : ''}">${letter}</span>${index < data.path.length - 1 ? '<i>›</i>' : ''}`).join('')}</div></div>`; }
 
+function byteLabel(value) {
+  return typeof value === 'number' && value >= 0 && value <= 255 ? value.toString(16).padStart(2, '0').toUpperCase() : String(value);
+}
+
+function renderByteGrid(data) {
+  const values = data.bytes ?? data.values ?? [];
+  return `<div class="byte-grid" aria-label="字节网格">${values.map((value, index) => `<span><small>${index}</small><b>${escapeHtml(byteLabel(value))}</b></span>`).join('')}</div>`;
+}
+
+function renderAesState(data) {
+  const state = data.state ?? [];
+  const cells = [];
+  for (let row = 0; row < 4; row += 1) {
+    for (let column = 0; column < 4; column += 1) {
+      const value = state[row + 4 * column];
+      cells.push(`<span><small>r${row}c${column}</small><b>${byteLabel(value ?? 0)}</b></span>`);
+    }
+  }
+  return `<div class="aes-state" aria-label="AES 4×4 状态矩阵">${cells.join('')}</div>`;
+}
+
+function renderKeySchedule(data) {
+  return `<div class="key-schedule" aria-label="AES 轮密钥"><strong>K${escapeHtml(data.round)}</strong><div>${(data.roundKey ?? []).map((value, index) => `<span><small>${index}</small>${byteLabel(value)}</span>`).join('')}</div></div>`;
+}
+
+function renderModularMath(data) {
+  const rows = data.trace ?? [];
+  return `<div class="modular-math" aria-label="模幂平方乘轨迹"><div class="math-summary"><span>底数 ${escapeHtml(data.base)}</span><span>指数 ${escapeHtml(data.exponent)}</span><span>模数 ${escapeHtml(data.modulus)}</span></div><div class="trace-scroll"><table><thead><tr><th>轮</th><th>位</th><th>因子</th><th>累计结果</th></tr></thead><tbody>${rows.map((entry) => `<tr><td>${entry.iteration}</td><td>${entry.bit}</td><td>${escapeHtml(entry.factor)}</td><td>${escapeHtml(entry.result)}</td></tr>`).join('')}</tbody></table></div></div>`;
+}
+
+function renderPermutation(data) {
+  return `<div class="permutation-window" aria-label="RC4 置换状态窗口"><div class="pointer-summary"><span>i = ${escapeHtml(data.i)}</span><span>j = ${escapeHtml(data.j)}</span>${data.t !== undefined ? `<span>t = ${escapeHtml(data.t)}</span>` : ''}</div><div class="permutation-cells">${(data.window ?? []).map((cell) => `<span class="${cell.isI ? 'pointer-i' : ''} ${cell.isJ ? 'pointer-j' : ''}"><small>S[${cell.index}]</small><b>${cell.value}</b></span>`).join('')}</div>${data.keyStreamByte !== undefined ? `<p>密钥流字节 <strong>${byteLabel(data.keyStreamByte)}</strong>，输入 <strong>${byteLabel(data.sourceByte)}</strong>，输出 <strong>${byteLabel(data.resultByte)}</strong></p>` : ''}</div>`;
+}
+
+function renderRegisters(data) {
+  const names = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].filter((name) => data[name] !== undefined);
+  return `<div class="register-cards" aria-label="哈希工作寄存器">${names.map((name) => `<div><small>${name.toUpperCase()}</small><strong>${escapeHtml(data[name])}</strong></div>`).join('')}</div>`;
+}
+
+function renderMessageSchedule(data) {
+  const index = data.wordIndex ?? data.operation ?? 0;
+  return `<div class="message-schedule" aria-label="消息扩展字"><small>${data.endian === 'little' ? '小端消息字' : '消息扩展字'}</small><strong>${data.endian === 'little' ? 'M' : 'W'}[${escapeHtml(index)}]</strong><code>${escapeHtml(data.value ?? '')}</code></div>`;
+}
+
+function renderKeyDerivation(data) {
+  return `<div class="key-derivation" aria-label="RSA 密钥推导">${['p', 'q', 'n', 'phi', 'e', 'd'].filter((name) => data[name] !== undefined).map((name) => `<div><small>${name === 'phi' ? 'φ(n)' : name}</small><strong>${escapeHtml(data[name])}</strong></div>`).join('')}</div>`;
+}
+
 export function renderStep(state) {
   if (!state?.step) return '<div class="stage-empty"><span>∴</span><strong>准备实验</strong><p>点击“运行实验”生成逐步动画。</p></div>';
   const { step, index, total } = state;
-  const visuals = { alphabet: () => renderAlphabet(step.data), formula: () => renderFormula(step), tableau: () => renderTableau(step), playfair: () => renderPlayfair(step.data), matrix: () => renderMatrix(step.data), columnar: () => renderColumnar(step.data), bits: () => renderBits(step.data), rotor: () => renderRotor(step.data) };
+  const visuals = {
+    alphabet: () => renderAlphabet(step.data), formula: () => renderFormula(step), tableau: () => renderTableau(step),
+    playfair: () => renderPlayfair(step.data), matrix: () => renderMatrix(step.data), columnar: () => renderColumnar(step.data),
+    bits: () => renderBits(step.data), rotor: () => renderRotor(step.data), 'byte-grid': () => renderByteGrid(step.data),
+    'state-matrix': () => renderAesState(step.data), 'key-schedule': () => renderKeySchedule(step.data),
+    'modular-math': () => renderModularMath(step.data), 'key-derivation': () => renderKeyDerivation(step.data),
+    permutation: () => renderPermutation(step.data), 'ksa-state': () => renderPermutation(step.data), 'prga-state': () => renderPermutation(step.data),
+    registers: () => renderRegisters(step.data), 'message-schedule': () => renderMessageSchedule(step.data),
+    'message-word': () => renderMessageSchedule(step.data), 'hash-state': () => renderRegisters(step.data),
+    padding: () => renderByteGrid(step.data), digest: () => renderByteGrid(step.data)
+  };
   return `<div class="step-view">
     <div class="step-meta"><span>STEP ${String(index + 1).padStart(2, '0')}</span><strong>${index + 1} / ${total}</strong></div>
     <div class="progress-track"><i style="width:${((index + 1) / total) * 100}%"></i></div>
@@ -125,4 +202,3 @@ export function renderStep(state) {
     <div class="step-equation"><span>计算</span><code>${escapeHtml(step.formula)}</code></div><p class="step-detail">${escapeHtml(step.detail)}</p>
   </div>`;
 }
-

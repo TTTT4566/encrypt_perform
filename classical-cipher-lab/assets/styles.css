@@ -1,4 +1,5 @@
 @import url("./theme-light.css");
+@import url("./modern-visualizers.css");
 
 /* The app focuses <main> after route changes; suppress only that programmatic frame. */
 main:focus { outline: none; }

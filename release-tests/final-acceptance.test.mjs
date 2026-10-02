@@ -9,18 +9,18 @@ import { renderAlgorithmPage, renderIntro, renderStep } from '../classical-ciphe
 
 const here = dirname(fileURLToPath(import.meta.url));
 const siteRoot = resolve(here, '../classical-cipher-lab');
+const expectedIds = ['caesar', 'affine', 'vigenere', 'playfair', 'hill', 'columnar', 'otp', 'rotor', 'aes', 'rsa', 'rc4', 'sha256', 'md5'];
 
-test('final site exposes exactly eight classical-cipher modules', () => {
-  assert.deepEqual(algorithms.map(({ meta }) => meta.id),
-    ['caesar', 'affine', 'vigenere', 'playfair', 'hill', 'columnar', 'otp', 'rotor']);
+test('final site exposes exactly thirteen classical and modern modules', () => {
+  assert.deepEqual(algorithms.map(({ meta }) => meta.id), expectedIds);
   for (const algorithm of algorithms) {
-    assert.equal(typeof algorithm.encrypt, 'function');
-    assert.equal(typeof algorithm.decrypt, 'function');
+    const modes = algorithm.meta.modes ?? ['encrypt', 'decrypt'];
+    for (const mode of modes) assert.equal(typeof algorithm[mode], 'function', `${algorithm.meta.id}.${mode} should exist`);
     assert.equal(getAlgorithm(algorithm.meta.id), algorithm);
   }
 });
 
-test('all eight modules encrypt, decrypt, and produce animation steps', () => {
+test('all eight classical modules still encrypt, decrypt, and animate', () => {
   const cases = [
     ['caesar', 'HELLO', { shift: 3 }, 'KHOOR', 'HELLO'],
     ['affine', 'AFFINECIPHER', { a: 5, b: 8 }, 'IHHWVCSWFRCP', 'AFFINECIPHER'],
@@ -42,17 +42,34 @@ test('all eight modules encrypt, decrypt, and produce animation steps', () => {
   }
 });
 
+test('modern encryption modules round trip and hash modules match abc vectors', () => {
+  const roundTrips = [
+    ['aes', 'AES 教学', { key: 'Thats my Kung Fu' }],
+    ['rsa', 'RSA 教学', { p: 61, q: 53, e: 17 }],
+    ['rc4', 'RC4 教学', { key: 'Key' }]
+  ];
+  for (const [id, input, key] of roundTrips) {
+    const algorithm = getAlgorithm(id);
+    const encrypted = algorithm.encrypt(input, key);
+    assert.ok(encrypted.steps.length > 0);
+    assert.equal(algorithm.decrypt(encrypted.output, key).output, input);
+  }
+  assert.equal(getAlgorithm('sha256').hash('abc').output, 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
+  assert.equal(getAlgorithm('md5').hash('abc').output, '900150983cd24fb0d6963f7d28e17f72');
+});
+
 test('intro and every module render complete teaching UI', () => {
   const intro = renderIntro(algorithms);
-  assert.match(intro, /<strong>08<\/strong><span>交互实验<\/span>/);
-  assert.equal((intro.match(/class="algorithm-card"/g) ?? []).length, 8);
+  assert.match(intro, /<strong>13<\/strong><span>交互实验<\/span>/);
+  assert.equal((intro.match(/class="algorithm-card"/g) ?? []).length, 13);
   for (const algorithm of algorithms) {
     const page = renderAlgorithmPage(algorithm);
     assert.match(page, new RegExp(algorithm.meta.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
     assert.match(page, /仅用于教学/);
     assert.match(page, /data-action="run"/);
     assert.match(page, /data-action="play"/);
-    const result = algorithm.encrypt(algorithm.meta.defaults.input, algorithm.meta.defaults);
+    const mode = (algorithm.meta.modes ?? ['encrypt'])[0];
+    const result = algorithm[mode](algorithm.meta.defaults.input, algorithm.meta.defaults);
     const state = { step: result.steps[0], index: 0, total: result.steps.length };
     assert.match(renderStep(state), /class="step-view"/);
   }
@@ -64,7 +81,7 @@ test('entry page references existing local assets and all navigation targets', (
   assert.match(html, /assets\/styles\.css/);
   assert.match(html, /js\/app\.js/);
   assert.match(html, /id="sidebar"/);
-  for (const relativePath of ['assets/styles.css', 'js/app.js', 'js/catalog.js', 'js/visualizers/renderer.js']) {
+  for (const relativePath of ['assets/styles.css', 'assets/modern-visualizers.css', 'js/app.js', 'js/catalog.js', 'js/visualizers/renderer.js']) {
     assert.equal(existsSync(resolve(siteRoot, relativePath)), true, `${relativePath} should exist`);
   }
   for (const { meta } of algorithms) assert.match(html, new RegExp(`href="#${meta.id}"`));

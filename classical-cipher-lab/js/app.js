@@ -27,6 +27,10 @@ const timeline = createTimeline((state) => {
   if (next) next.disabled = state.index < 0 || state.index >= state.total - 1;
 });
 
+function modesFor(meta) {
+  return Array.isArray(meta.modes) && meta.modes.length ? meta.modes : ['encrypt', 'decrypt'];
+}
+
 function showToast(message) {
   clearTimeout(toastTimer);
   toast.textContent = message;
@@ -52,8 +56,10 @@ function updateNavigation(id) {
 }
 
 function collectKey(form) {
-  const key = { preserve: form.elements.preserve.checked };
-  for (const field of activeAlgorithm.meta.keyFields) {
+  const key = {};
+  const preserve = form.elements.preserve;
+  if (preserve) key.preserve = preserve.checked;
+  for (const field of activeAlgorithm.meta.keyFields ?? []) {
     const control = form.elements[field.name];
     key[field.name] = field.type === 'number' ? Number(control.value) : control.value;
   }
@@ -65,7 +71,7 @@ function setResult(result, mode) {
   activeResult = result;
   const strip = document.querySelector('#result-strip');
   strip.hidden = false;
-  document.querySelector('#result-label').textContent = mode === 'encrypt' ? '加密结果' : '解密结果';
+  document.querySelector('#result-label').textContent = mode === 'hash' ? '摘要结果' : mode === 'encrypt' ? '加密结果' : '解密结果';
   document.querySelector('#result-output').textContent = result.output;
 }
 
@@ -75,7 +81,9 @@ function runExperiment() {
   error.textContent = '';
   try {
     const mode = form.elements.mode.value;
-    const result = activeAlgorithm[mode](form.elements.input.value, collectKey(form));
+    const operation = activeAlgorithm[mode];
+    if (typeof operation !== 'function') throw new Error('当前算法不支持该运算模式');
+    const result = operation(form.elements.input.value, collectKey(form));
     setResult(result, mode);
     timeline.load(result.steps);
   } catch (reason) {
@@ -94,7 +102,9 @@ function setMode(mode) {
     button.classList.toggle('active', active);
     button.setAttribute('aria-pressed', String(active));
   });
-  document.querySelector('#message-label').textContent = mode === 'encrypt' ? '明文' : '密文';
+  document.querySelector('#message-label').textContent = mode === 'hash' ? '摘要内容' : mode === 'encrypt' ? '明文' : '密文';
+  const runLabel = document.querySelector('[data-action="run"] span');
+  if (runLabel) runLabel.textContent = mode === 'hash' ? '生成摘要' : '运行实验';
   runExperiment();
 }
 
@@ -102,9 +112,11 @@ function loadPreset() {
   const form = document.querySelector('#cipher-form');
   const defaults = activeAlgorithm.meta.defaults;
   form.elements.input.value = defaults.input;
-  form.elements.preserve.checked = Boolean(defaults.preserve);
-  for (const field of activeAlgorithm.meta.keyFields) form.elements[field.name].value = defaults[field.name] ?? field.value;
-  setMode('encrypt');
+  if (form.elements.preserve) form.elements.preserve.checked = Boolean(defaults.preserve);
+  for (const field of activeAlgorithm.meta.keyFields ?? []) {
+    form.elements[field.name].value = defaults[field.name] ?? defaults.key?.[field.name] ?? field.value;
+  }
+  setMode(modesFor(activeAlgorithm.meta)[0]);
   showToast('已载入教材示例');
 }
 
