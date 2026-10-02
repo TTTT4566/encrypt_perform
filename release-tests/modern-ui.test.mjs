@@ -67,7 +67,9 @@ test('RSA and RC4 render modular arithmetic and permutation state accessibly', (
   assert.match(renderRealStep('rc4', 'ksa-state'), /class="permutation-window"[^>]*aria-label="RC4 置换状态窗口"/);
 });
 
-test('hash renderers expose schedules and working registers', () => {
+test('hash renderers expose schedules, working registers, and accumulated state', () => {
   assert.match(renderRealStep('sha256', 'message-schedule', 'hash'), /class="message-schedule"[^>]*aria-label="消息扩展字"/);
   assert.match(renderRealStep('md5', 'registers', 'hash'), /class="register-cards"[^>]*aria-label="哈希工作寄存器"/);
+  assert.match(renderRealStep('sha256', 'hash-state', 'hash'), /<small>H0<\/small><strong>[0-9a-f]{8}<\/strong>/);
+  assert.match(renderRealStep('md5', 'hash-state', 'hash'), /<small>H0<\/small><strong>[0-9a-f]{8}<\/strong>/);
 });

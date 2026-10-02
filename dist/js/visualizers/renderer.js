@@ -168,7 +168,10 @@ function renderPermutation(data) {
 
 function renderRegisters(data) {
   const names = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].filter((name) => data[name] !== undefined);
-  return `<div class="register-cards" aria-label="哈希工作寄存器">${names.map((name) => `<div><small>${name.toUpperCase()}</small><strong>${escapeHtml(data[name])}</strong></div>`).join('')}</div>`;
+  const entries = names.length
+    ? names.map((name) => [name.toUpperCase(), data[name]])
+    : (data.state ?? []).map((value, index) => [`H${index}`, value]);
+  return `<div class="register-cards" aria-label="哈希工作寄存器">${entries.map(([name, value]) => `<div><small>${name}</small><strong>${escapeHtml(value)}</strong></div>`).join('')}</div>`;
 }
 
 function renderMessageSchedule(data) {
