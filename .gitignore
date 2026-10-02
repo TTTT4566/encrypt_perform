@@ -9,3 +9,5 @@ Thumbs.db
 # Local research and generated scratch files
 tmp/
 .superpowers/
+
+.worktrees/
