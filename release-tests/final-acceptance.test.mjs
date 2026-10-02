@@ -86,3 +86,41 @@ test('entry page references existing local assets and all navigation targets', (
   }
   for (const { meta } of algorithms) assert.match(html, new RegExp(`href="#${meta.id}"`));
 });
+
+test('release completion matrix covers every modern-extension criterion', () => {
+  const packageJson = JSON.parse(readFileSync(resolve(siteRoot, '../package.json'), 'utf8'));
+  const modernIds = ['aes', 'rsa', 'rc4', 'sha256', 'md5'];
+  const criteria = [
+    ['13 catalog routes', () => assert.deepEqual(algorithms.map(({ meta }) => meta.id), expectedIds)],
+    ['five modern operations', () => modernIds.forEach((id) => {
+      const algorithm = getAlgorithm(id);
+      assert.equal(typeof algorithm[algorithm.meta.modes[0]], 'function');
+    })],
+    ['non-empty modern animations', () => modernIds.forEach((id) => {
+      const algorithm = getAlgorithm(id);
+      const mode = algorithm.meta.modes[0];
+      assert.ok(algorithm[mode](algorithm.meta.defaults.input, algorithm.meta.defaults).steps.length > 0);
+    })],
+    ['hash-only controls', () => ['sha256', 'md5'].forEach((id) => {
+      const page = renderAlgorithmPage(getAlgorithm(id));
+      assert.match(page, /data-mode="hash"/);
+      assert.doesNotMatch(page, /data-mode="decrypt"/);
+    })],
+    ['algorithm-specific warnings', () => modernIds.forEach((id) => {
+      const algorithm = getAlgorithm(id);
+      assert.ok(renderAlgorithmPage(algorithm).includes(algorithm.meta.note));
+    })],
+    ['generated dist', () => {
+      assert.equal(existsSync(resolve(siteRoot, '../dist/index.html')), true);
+      modernIds.forEach((id) => assert.equal(existsSync(resolve(siteRoot, `../dist/js/algorithms/${id}.js`)), true));
+    }],
+    ['obsolete site absent', () => assert.equal(existsSync(resolve(siteRoot, '../site')), false)],
+    ['build and test scripts', () => {
+      assert.match(packageJson.scripts.build, /scripts\/build\.mjs/);
+      assert.match(packageJson.scripts.test, /npm run build/);
+      assert.match(packageJson.scripts.test, /release-tests/);
+    }]
+  ];
+
+  for (const [criterion, verify] of criteria) assert.doesNotThrow(verify, criterion);
+});
