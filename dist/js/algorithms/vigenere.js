@@ -3,17 +3,17 @@ import { letterToNumber, normalizeLetters, numberToLetter, requireLetters, trans
 
 export const meta = {
   id: 'vigenere', title: '维吉尼亚密码', code: '03', category: '替代密码', difficulty: '基础',
-  summary: '让关键词循环参与位移，同一个明文字母会随位置变成不同密文字母。',
+  summary: '让密钥循环参与位移，同一个明文字母会随位置变成不同密文字母。',
   formula: 'Cᵢ = (Mᵢ + Kᵢ) mod 26',
   note: '重复密钥会产生周期，可以通过 Kasiski 检验等方法分析。',
   defaults: { input: 'ATTACK AT DAWN', keyword: 'LEMON', preserve: true },
-  keyFields: [{ name: 'keyword', label: '关键词', type: 'text', value: 'LEMON', placeholder: '例如 LEMON' }]
+  keyFields: [{ name: 'keyword', label: '密钥', type: 'text', value: 'LEMON', placeholder: '例如 LEMON' }]
 };
 
 export function validate(input, key = {}) {
   requireLetters(input);
   const keyword = normalizeLetters(key.keyword);
-  if (!keyword) throw new Error('关键词中至少需要一个英文字母');
+  if (!keyword) throw new Error('密钥中至少需要一个英文字母');
 }
 
 function run(input, key = {}, direction) {

@@ -1,0 +1,100 @@
+.mode-switch.mode-count-1 { grid-template-columns: 1fr; }
+.mini-transform { min-width: 0; max-width: 58%; }
+.mini-transform span { min-width: 0; max-width: 240px; padding-inline: .65rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.byte-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
+  gap: .5rem;
+  width: 100%;
+  max-height: 230px;
+  overflow: auto;
+}
+.byte-grid span,
+.aes-state span,
+.key-schedule span,
+.permutation-cells span {
+  display: grid;
+  place-items: center;
+  min-height: 54px;
+  color: var(--ink);
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: .55rem;
+  font-family: ui-monospace, Consolas, monospace;
+}
+.byte-grid small,
+.aes-state small,
+.key-schedule small,
+.permutation-cells small { color: #94a3b8; font-size: .62rem; }
+.byte-grid b,
+.aes-state b { color: var(--accent); }
+
+.aes-state {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(58px, 74px));
+  gap: .55rem;
+}
+.aes-state span { min-height: 62px; }
+.aes-state span:nth-child(4n + 1) { border-left: 3px solid var(--accent); }
+
+.key-schedule { width: min(100%, 620px); }
+.key-schedule > strong { display: block; margin-bottom: .7rem; color: var(--accent); font: 800 1.1rem ui-monospace, monospace; }
+.key-schedule > div { display: grid; grid-template-columns: repeat(8, 1fr); gap: .42rem; }
+.key-schedule span { min-height: 50px; font-size: .78rem; }
+
+.modular-math { width: min(100%, 690px); }
+.math-summary,
+.pointer-summary { display: flex; flex-wrap: wrap; gap: .55rem; margin-bottom: .75rem; }
+.math-summary span,
+.pointer-summary span { padding: .32rem .58rem; color: #1d4ed8; background: var(--accent-soft); border-radius: .4rem; font: 700 .76rem ui-monospace, monospace; }
+.trace-scroll { max-height: 210px; overflow: auto; border: 1px solid var(--line); border-radius: .6rem; }
+.trace-scroll table { width: 100%; border-collapse: collapse; font: .76rem ui-monospace, Consolas, monospace; }
+.trace-scroll th { position: sticky; top: 0; color: #475569; background: #f1f5f9; }
+.trace-scroll th,
+.trace-scroll td { padding: .48rem .62rem; text-align: left; border-bottom: 1px solid var(--line); }
+.trace-scroll td:last-child { color: var(--accent); font-weight: 750; }
+
+.permutation-window { width: min(100%, 720px); }
+.permutation-cells { display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: .48rem; max-height: 170px; overflow: auto; }
+.permutation-cells span.pointer-i { border-color: #f59e0b; background: #fffbeb; }
+.permutation-cells span.pointer-j { box-shadow: inset 0 -3px 0 var(--accent); }
+.permutation-window p { margin: .8rem 0 0; color: var(--muted); text-align: center; }
+.permutation-window p strong { color: var(--accent); font-family: ui-monospace, monospace; }
+
+.register-cards,
+.key-derivation { display: grid; grid-template-columns: repeat(4, minmax(100px, 1fr)); gap: .55rem; width: 100%; }
+.register-cards > div,
+.key-derivation > div { min-width: 0; padding: .72rem; background: #f8fafc; border: 1px solid var(--line); border-radius: .58rem; }
+.register-cards small,
+.key-derivation small { display: block; color: #64748b; font-size: .68rem; font-weight: 800; }
+.register-cards strong,
+.key-derivation strong { display: block; margin-top: .25rem; overflow: hidden; color: var(--accent); font: 750 .82rem ui-monospace, Consolas, monospace; text-overflow: ellipsis; }
+.key-derivation { grid-template-columns: repeat(3, minmax(100px, 1fr)); max-width: 600px; }
+
+.message-schedule {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: .8rem;
+  width: min(100%, 520px);
+  padding: 1rem;
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  border-radius: .7rem;
+}
+.message-schedule small { color: #64748b; }
+.message-schedule strong { font: 850 1.15rem ui-monospace, monospace; }
+.message-schedule code { justify-self: end; color: var(--accent); font: 750 1rem ui-monospace, Consolas, monospace; }
+
+@media (max-width: 650px) {
+  .mini-transform { max-width: 50%; }
+  .aes-state { grid-template-columns: repeat(4, 48px); gap: .35rem; }
+  .aes-state span { min-height: 52px; font-size: .76rem; }
+  .key-schedule > div { grid-template-columns: repeat(4, 1fr); }
+  .register-cards { grid-template-columns: repeat(2, minmax(90px, 1fr)); }
+  .key-derivation { grid-template-columns: repeat(2, minmax(90px, 1fr)); }
+  .message-schedule { grid-template-columns: 1fr auto; }
+  .message-schedule small { grid-column: 1 / -1; }
+}
