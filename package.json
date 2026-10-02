@@ -7,6 +7,6 @@
     "build": "node scripts/build.mjs",
     "test:source": "node --test tests/*.test.mjs release-tests/*.test.mjs",
     "test": "npm run build && node --test --test-concurrency=1 tests/*.test.mjs release-tests/*.test.mjs",
-    "serve": "python -m http.server 4173 --directory dist"
+    "serve": "node classical-cipher-lab/serve.mjs --root=dist"
   }
 }

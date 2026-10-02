@@ -4,7 +4,10 @@ import { createServer } from 'node:http';
 import { extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = fileURLToPath(new URL('.', import.meta.url));
+const sourceRoot = fileURLToPath(new URL('.', import.meta.url));
+const rootOption = process.argv.find((argument) => argument.startsWith('--root='));
+const root = rootOption ? resolve(process.cwd(), rootOption.slice('--root='.length)) : sourceRoot;
+if (!statSync(root).isDirectory()) throw new Error(`静态资源目录不存在：${root}`);
 const host = '127.0.0.1';
 const requestedPort = Number(process.env.PORT ?? 4173);
 const shouldOpen = process.argv.includes('--open');
