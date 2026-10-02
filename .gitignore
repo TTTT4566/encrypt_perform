@@ -1,0 +1,11 @@
+# Local dependencies and logs
+node_modules/
+*.log
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+
+# Local research and generated scratch files
+tmp/
+.superpowers/

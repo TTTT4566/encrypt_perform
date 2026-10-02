@@ -1,0 +1,4 @@
+@import url("./theme-light.css");
+
+/* The app focuses <main> after route changes; suppress only that programmatic frame. */
+main:focus { outline: none; }

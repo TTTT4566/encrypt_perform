@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="八种古典密码的交互式加密、解密与逐步动画实验室。" />
+    <meta name="theme-color" content="#0b1220" />
+    <title>古典密码实验室</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1220'/%3E%3Cpath d='M18 25h28v25H18z' fill='%232dd4bf'/%3E%3Cpath d='M24 25v-5a8 8 0 0 1 16 0v5' fill='none' stroke='%23e2e8f0' stroke-width='5'/%3E%3Ccircle cx='32' cy='37' r='4' fill='%230b1220'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./assets/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">跳到主要内容</a>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar" aria-label="算法目录">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">∑</span>
+          <div><strong>古典密码</strong><span>VISUAL LAB</span></div>
+        </div>
+        <nav class="side-nav">
+          <a class="nav-link" href="#intro" data-route="intro">开始学习</a>
+          <p class="nav-group">替代密码</p>
+          <a class="nav-link" href="#caesar" data-route="caesar">凯撒密码 <span>01</span></a>
+          <a class="nav-link" href="#affine" data-route="affine">仿射密码 <span>02</span></a>
+          <a class="nav-link" href="#vigenere" data-route="vigenere">维吉尼亚密码 <span>03</span></a>
+          <a class="nav-link" href="#playfair" data-route="playfair">Playfair 密码 <span>04</span></a>
+          <p class="nav-group">数学与置换</p>
+          <a class="nav-link" href="#hill" data-route="hill">Hill 密码 <span>05</span></a>
+          <a class="nav-link" href="#columnar" data-route="columnar">列置换密码 <span>06</span></a>
+          <p class="nav-group">密钥流与机械</p>
+          <a class="nav-link" href="#otp" data-route="otp">一次一密 <span>07</span></a>
+          <a class="nav-link" href="#rotor" data-route="rotor">转轮机密码 <span>08</span></a>
+        </nav>
+        <div class="sidebar-note"><span aria-hidden="true">i</span><p>教学演示实现<br />不用于真实安全通信</p></div>
+      </aside>
+      <div class="backdrop" id="backdrop" hidden></div>
+      <section class="page-column">
+        <header class="topbar">
+          <button class="icon-button menu-button" id="menu-button" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="打开目录">☰</button>
+          <div class="breadcrumbs"><span>密码学</span><span>/</span><strong id="crumb-current">开始学习</strong></div>
+          <div class="topbar-meta"><span class="status-dot"></span>8 个实验</div>
+        </header>
+        <main id="main-content" tabindex="-1"></main>
+      </section>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>
