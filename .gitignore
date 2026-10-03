@@ -1,6 +1,25 @@
 # Local dependencies and logs
 node_modules/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files and local credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Editors and test output
+.vscode/
+.idea/
+coverage/
 
 # Operating-system files
 .DS_Store

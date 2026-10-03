@@ -71,7 +71,7 @@ export function decrypt(input, key = {}) {
   const groups = [];
   const steps = [{
     index: 0, kind: 'periodic', title: '计算逆置换 σ⁻¹', input: permutation.join(''), output: inverse.join(''),
-    formula: `σ⁻¹ = (${inverse.join(', ')})`, detail: '逆置换由原置换密钥自动计算，不需要另行输入。',
+    formula: `σ⁻¹ = (${inverse.join(', ')})`, detail: '逆置换由原置换密钥自动计算',
     data: {
       source: permutation.map(String), result: inverse.map(String), permutation: inverse,
       permutationLabel: '逆置换 σ⁻¹',

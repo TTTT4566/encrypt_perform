@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test:source": "node --test tests/*.test.mjs release-tests/*.test.mjs",
-    "test": "npm run build && node --test --test-concurrency=1 tests/*.test.mjs release-tests/*.test.mjs",
+    "check:dist": "node --test release-tests/dist-sync.test.mjs",
+    "test:source": "node --test --test-concurrency=1 tests/*.test.mjs release-tests/*.test.mjs",
+    "test": "npm run check:dist && npm run build && node --test --test-concurrency=1 tests/*.test.mjs release-tests/*.test.mjs",
     "serve": "node classical-cipher-lab/serve.mjs --root=dist"
   }
 }
