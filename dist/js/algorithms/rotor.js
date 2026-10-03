@@ -14,7 +14,7 @@ const INVERSES = WIRINGS.map((wiring) => {
 const REFLECTOR = [...'YRUHQSLDPXNGOKMIEBFZCWVJAT'].map(letterToNumber);
 
 export const meta = {
-  id: 'rotor', title: '转轮机密码', code: '08', category: '密钥流与机械', difficulty: '进阶',
+  id: 'rotor', title: '转轮机密码', code: '09', category: '密钥流与机械', difficulty: '进阶',
   summary: '每处理一个字母，转轮位置都会改变，让替代关系随时间不断变化。',
   formula: '键盘 → 转轮 III → II → I → 反射器 → I → II → III',
   note: '这是三转轮教学模型，不是历史 Enigma 的完整机械复刻。',

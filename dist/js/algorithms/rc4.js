@@ -90,7 +90,7 @@ export function applyRc4(inputBytes, keyBytes) {
 }
 
 export const meta = {
-  id: 'rc4', title: 'RC4', code: '11', category: '现代流密码', difficulty: '进阶',
+  id: 'rc4', title: 'RC4', code: '12', category: '现代流密码', difficulty: '进阶',
   modes: ['encrypt', 'decrypt'], showPreserveOption: false,
   summary: '逐步观察 RC4 的 256 次密钥调度交换和伪随机密钥流生成。',
   formula: 'Cᵢ = Pᵢ ⊕ Kᵢ',

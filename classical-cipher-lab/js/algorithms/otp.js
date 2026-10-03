@@ -2,7 +2,7 @@ import { mod } from '../core/math.js';
 import { letterToNumber, normalizeLetters, numberToLetter, requireLetters, transformLetters } from '../core/text.js';
 
 export const meta = {
-  id: 'otp', title: '一次一密', code: '07', category: '密钥流与机械', difficulty: '基础',
+  id: 'otp', title: '一次一密', code: '08', category: '密钥流与机械', difficulty: '基础',
   summary: '让随机、等长且只使用一次的密钥与消息逐位组合，可获得理论上的完全保密。',
   formula: 'Cᵢ = (Mᵢ + Kᵢ) mod 26',
   note: '安全性依赖真正随机、等长、秘密且永不复用的密钥；教学关键词不满足真实条件。',

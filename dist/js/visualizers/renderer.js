@@ -53,14 +53,23 @@ export function renderIntro(algorithms) {
     </section>`;
 }
 
-function renderKeyFields(meta) {
-  return (meta.keyFields ?? []).map((field) => `
+function renderKeyFields(meta, mode) {
+  return (meta.keyFields ?? []).map((field) => {
+    const encryptLabel = field.labels?.encrypt ?? field.label;
+    const decryptLabel = field.labels?.decrypt ?? field.label;
+    const hashLabel = field.labels?.hash ?? field.label;
+    const label = field.labels?.[mode] ?? field.label;
+    const labelMarkup = field.labels
+      ? `<span data-key-label="${escapeHtml(field.name)}" data-label-encrypt="${escapeHtml(encryptLabel)}" data-label-decrypt="${escapeHtml(decryptLabel)}" data-label-hash="${escapeHtml(hashLabel)}">${escapeHtml(label)}</span>`
+      : `<span>${escapeHtml(label)}</span>`;
+    return `
     <label class="field ${meta.id === 'hill' ? 'field-compact' : ''}">
-      <span>${escapeHtml(field.label)}</span>
+      ${labelMarkup}
       <input name="${escapeHtml(field.name)}" type="${field.type}" value="${escapeHtml(field.value)}"
         ${field.min !== undefined ? `min="${field.min}"` : ''} ${field.max !== undefined ? `max="${field.max}"` : ''}
         ${field.maxlength ? `maxlength="${field.maxlength}"` : ''} ${field.placeholder ? `placeholder="${escapeHtml(field.placeholder)}"` : ''} />
-    </label>`).join('');
+    </label>`;
+  }).join('');
 }
 
 export function renderAlgorithmPage(algorithm) {
@@ -82,7 +91,7 @@ export function renderAlgorithmPage(algorithm) {
             ${modeButtons}<input type="hidden" name="mode" value="${initialMode}" />
           </div>
           <label class="field field-message"><span id="message-label">${inputLabel(initialMode)}</span><textarea name="input" rows="4" spellcheck="false">${escapeHtml(meta.defaults.input)}</textarea></label>
-          <div class="key-fields ${meta.id === 'hill' ? 'matrix-fields' : ''}">${renderKeyFields(meta)}</div>
+          <div class="key-fields ${meta.id === 'hill' ? 'matrix-fields' : ''}">${renderKeyFields(meta, initialMode)}</div>
           ${showPreserveOption ? `<label class="check-field"><input type="checkbox" name="preserve" ${meta.defaults.preserve ? 'checked' : ''}/><span>保留空格、数字和标点</span></label>` : ''}
           <p class="form-error" id="form-error" role="alert"></p>
           <div class="primary-actions"><button class="primary-button" type="submit" data-action="run">${icon('play')}<span>${actionLabel(initialMode)}</span></button><button class="secondary-button" type="button" data-action="preset">载入示例</button></div>
@@ -98,7 +107,7 @@ export function renderAlgorithmPage(algorithm) {
             <label class="speed-control"><span>速度</span><input type="range" name="speed" min="180" max="1500" step="110" value="900" aria-label="动画速度" /><strong>1.0×</strong></label>
           </div>
           <div class="visual-stage" id="visual-stage" aria-live="polite"><div class="stage-empty"><span>∴</span><strong>准备实验</strong><p>点击“${actionLabel(initialMode)}”生成逐步动画。</p></div></div>
-          <div class="result-strip" id="result-strip" hidden><div><span id="result-label">${initialMode === 'hash' ? '摘要结果' : '加密结果'}</span><output id="result-output"></output></div><button type="button" class="copy-button" data-action="copy">${icon('copy')}复制</button></div>
+          <div class="result-strip" id="result-strip" hidden><div><span id="result-label">${initialMode === 'hash' ? '摘要结果' : '加密结果'}</span><output id="result-output"></output><p class="result-detail" id="result-detail" hidden></p></div><button type="button" class="copy-button" data-action="copy">${icon('copy')}复制</button></div>
         </div>
       </section>
       <section class="explanation-grid">
@@ -123,8 +132,12 @@ function renderPlayfair(data) {
 }
 function renderMatrix(data) { return `<div class="matrix-visual"><div class="matrix">${data.matrix.flat().map((value) => `<span>${value}</span>`).join('')}</div><b>×</b><div class="vector">${data.vector.map((value) => `<span>${value}</span>`).join('')}</div><b>mod 26 =</b><div class="vector result">${data.resultVector.map((value) => `<span>${value}</span>`).join('')}</div></div>`; }
 function renderColumnar(data) {
-  const keyword = [...data.keyword]; const rows = data.grid ?? [];
-  return `<div class="grid-scroll"><table class="column-grid"><thead><tr>${keyword.map((char, index) => `<th class="${index === data.activeColumn ? 'active' : ''}">${char}<small>${index + 1}</small></th>`).join('')}</tr></thead><tbody>${rows.map((row) => `<tr>${keyword.map((_, index) => `<td class="${index === data.activeColumn ? 'active' : ''}">${escapeHtml(row[index] ?? '·')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  const columnLabels = data.columnLabels ?? []; const rows = data.grid ?? [];
+  return `<div class="grid-scroll"><table class="column-grid"><thead><tr>${columnLabels.map((label, index) => `<th class="${index === data.activeColumn ? 'active' : ''}">${escapeHtml(label)}<small>第 ${index + 1} 列</small></th>`).join('')}</tr></thead><tbody>${rows.map((row) => `<tr>${columnLabels.map((_, index) => `<td class="${index === data.activeColumn ? 'active' : ''}">${escapeHtml(row[index] ?? '·')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+function renderPeriodic(data) {
+  const cells = (values) => `<div class="periodic-cells">${values.map((value, index) => `<b><small>${index + 1}</small>${escapeHtml(value === ' ' ? '·' : value)}</b>`).join('')}</div>`;
+  return `<div class="periodic-visual" aria-label="周期置换分组"><div class="periodic-row"><span>${escapeHtml(data.sourceLabel)}</span>${cells(data.source ?? [])}</div><div class="periodic-order"><span>${escapeHtml(data.permutationLabel ?? '读取顺序 σ')}</span>${(data.permutation ?? []).map((position) => `<b>${escapeHtml(position)}</b>`).join('')}</div><div class="periodic-row result"><span>${escapeHtml(data.resultLabel)}</span>${cells(data.result ?? [])}</div></div>`;
 }
 function renderBits(data) {
   const row = (label, value, className = '') => `<div class="bit-row ${className}"><span>${label}</span>${[...value].map((bit) => `<b>${bit}</b>`).join('')}</div>`;
@@ -188,7 +201,7 @@ export function renderStep(state) {
   const { step, index, total } = state;
   const visuals = {
     alphabet: () => renderAlphabet(step.data), formula: () => renderFormula(step), tableau: () => renderTableau(step),
-    playfair: () => renderPlayfair(step.data), matrix: () => renderMatrix(step.data), columnar: () => renderColumnar(step.data),
+    playfair: () => renderPlayfair(step.data), matrix: () => renderMatrix(step.data), columnar: () => renderColumnar(step.data), periodic: () => renderPeriodic(step.data),
     bits: () => renderBits(step.data), rotor: () => renderRotor(step.data), 'byte-grid': () => renderByteGrid(step.data),
     'state-matrix': () => renderAesState(step.data), 'key-schedule': () => renderKeySchedule(step.data),
     'modular-math': () => renderModularMath(step.data), 'key-derivation': () => renderKeyDerivation(step.data),

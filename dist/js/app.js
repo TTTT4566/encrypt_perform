@@ -70,9 +70,12 @@ function collectKey(form) {
 function setResult(result, mode) {
   activeResult = result;
   const strip = document.querySelector('#result-strip');
+  const detail = document.querySelector('#result-detail');
   strip.hidden = false;
   document.querySelector('#result-label').textContent = mode === 'hash' ? '摘要结果' : mode === 'encrypt' ? '加密结果' : '解密结果';
   document.querySelector('#result-output').textContent = result.output;
+  detail.textContent = mode === 'decrypt' ? result.resultDetail ?? '' : '';
+  detail.hidden = !detail.textContent;
 }
 
 function runExperiment() {
@@ -103,6 +106,10 @@ function setMode(mode) {
     button.setAttribute('aria-pressed', String(active));
   });
   document.querySelector('#message-label').textContent = mode === 'hash' ? '摘要内容' : mode === 'encrypt' ? '明文' : '密文';
+  document.querySelectorAll('[data-key-label]').forEach((label) => {
+    const modeLabel = label.getAttribute(`data-label-${mode}`);
+    if (modeLabel) label.textContent = modeLabel;
+  });
   const runLabel = document.querySelector('[data-action="run"] span');
   if (runLabel) runLabel.textContent = mode === 'hash' ? '生成摘要' : '运行实验';
   runExperiment();

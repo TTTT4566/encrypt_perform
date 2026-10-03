@@ -9,7 +9,7 @@ import { renderAlgorithmPage, renderIntro, renderStep } from '../classical-ciphe
 
 const here = dirname(fileURLToPath(import.meta.url));
 const sourceRoot = resolve(here, '../classical-cipher-lab');
-const expectedIds = ['caesar', 'affine', 'vigenere', 'playfair', 'hill', 'columnar', 'otp', 'rotor', 'aes', 'rsa', 'rc4', 'sha256', 'md5'];
+const expectedIds = ['caesar', 'affine', 'vigenere', 'playfair', 'hill', 'periodic', 'columnar', 'otp', 'rotor', 'aes', 'rsa', 'rc4', 'sha256', 'md5'];
 
 function renderRealStep(algorithmId, kind, mode = 'encrypt') {
   const algorithm = getAlgorithm(algorithmId);
@@ -20,16 +20,18 @@ function renderRealStep(algorithmId, kind, mode = 'encrypt') {
   return renderStep({ step, index: step.index, total: result.steps.length });
 }
 
-test('catalog registers thirteen algorithms in the learning-path order', () => {
+test('catalog registers fourteen algorithms in the learning-path order', () => {
   assert.deepEqual(algorithms.map(({ meta }) => meta.id), expectedIds);
-  assert.equal((renderIntro(algorithms).match(/class="algorithm-card"/g) ?? []).length, 13);
-  assert.match(renderIntro(algorithms), /<strong>13<\/strong><span>交互实验<\/span>/);
+  assert.deepEqual(algorithms.map(({ meta }) => meta.code), Array.from({ length: 14 }, (_, index) => String(index + 1).padStart(2, '0')));
+  assert.equal((renderIntro(algorithms).match(/class="algorithm-card"/g) ?? []).length, 14);
+  assert.match(renderIntro(algorithms), /<strong>14<\/strong><span>交互实验<\/span>/);
 });
 
 test('entry page contains navigation links and modern experiment count', () => {
   const html = readFileSync(resolve(sourceRoot, 'index.html'), 'utf8');
-  for (const id of expectedIds.slice(8)) assert.match(html, new RegExp(`href="#${id}"`));
-  assert.match(html, />13 个实验</);
+  for (const id of expectedIds.slice(9)) assert.match(html, new RegExp(`href="#${id}"`));
+  assert.match(html, /href="#periodic"[^>]*>周期置换密码 <span>06<\/span>/);
+  assert.match(html, />14 个实验</);
 });
 
 test('mode controls and preserve option follow algorithm capabilities', () => {
@@ -50,7 +52,7 @@ test('mode controls and preserve option follow algorithm capabilities', () => {
 });
 
 test('every modern page renders its algorithm-specific security warning', () => {
-  for (const id of expectedIds.slice(8)) {
+  for (const id of expectedIds.slice(9)) {
     const algorithm = getAlgorithm(id);
     assert.match(renderAlgorithmPage(algorithm), new RegExp(algorithm.meta.note.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
@@ -65,6 +67,15 @@ test('AES renderers expose byte grids, state matrices, and key schedules', () =>
 test('RSA and RC4 render modular arithmetic and permutation state accessibly', () => {
   assert.match(renderRealStep('rsa', 'modular-math'), /class="modular-math"[^>]*aria-label="模幂平方乘轨迹"/);
   assert.match(renderRealStep('rc4', 'ksa-state'), /class="permutation-window"[^>]*aria-label="RC4 置换状态窗口"/);
+});
+
+test('periodic transposition renders source and permuted groups accessibly', () => {
+  assert.match(renderRealStep('periodic', 'periodic'), /class="periodic-visual"[^>]*aria-label="周期置换分组"/);
+  const algorithm = getAlgorithm('periodic');
+  const result = algorithm.decrypt('YTCOPRAHGYPR', { key: 351642 });
+  const step = result.steps[1];
+  const html = renderStep({ step, index: step.index, total: result.steps.length });
+  assert.match(html, /读取顺序 σ⁻¹/);
 });
 
 test('hash renderers expose schedules, working registers, and accumulated state', () => {

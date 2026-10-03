@@ -20,14 +20,14 @@ test('build replaces dist with an exact public copy of the canonical source', as
 
   for (const relativePath of [
     'index.html', 'assets/styles.css', 'assets/modern-visualizers.css', 'js/app.js', 'js/catalog.js',
-    'js/algorithms/aes.js', 'js/algorithms/rsa.js', 'js/algorithms/rc4.js',
+    'js/algorithms/periodic.js', 'js/algorithms/aes.js', 'js/algorithms/rsa.js', 'js/algorithms/rc4.js',
     'js/algorithms/sha256.js', 'js/algorithms/md5.js'
   ]) {
     assert.equal(existsSync(resolve(output, relativePath)), true, `${relativePath} should be built`);
   }
 
   const builtCatalog = await import(`${pathToFileURL(resolve(output, 'js/catalog.js')).href}?build=${Date.now()}`);
-  assert.equal(builtCatalog.algorithms.length, 13);
+  assert.equal(builtCatalog.algorithms.length, 14);
 
   for (const relativePath of ['index.html', 'assets/styles.css', 'assets/modern-visualizers.css', 'js/app.js', 'js/catalog.js']) {
     assert.deepEqual(readFileSync(resolve(output, relativePath)), readFileSync(resolve(source, relativePath)), `${relativePath} should match source byte-for-byte`);

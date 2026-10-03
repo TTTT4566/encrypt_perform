@@ -9,9 +9,9 @@ import { renderAlgorithmPage, renderIntro, renderStep } from '../classical-ciphe
 
 const here = dirname(fileURLToPath(import.meta.url));
 const siteRoot = resolve(here, '../classical-cipher-lab');
-const expectedIds = ['caesar', 'affine', 'vigenere', 'playfair', 'hill', 'columnar', 'otp', 'rotor', 'aes', 'rsa', 'rc4', 'sha256', 'md5'];
+const expectedIds = ['caesar', 'affine', 'vigenere', 'playfair', 'hill', 'periodic', 'columnar', 'otp', 'rotor', 'aes', 'rsa', 'rc4', 'sha256', 'md5'];
 
-test('final site exposes exactly thirteen classical and modern modules', () => {
+test('final site exposes exactly fourteen classical and modern modules', () => {
   assert.deepEqual(algorithms.map(({ meta }) => meta.id), expectedIds);
   for (const algorithm of algorithms) {
     const modes = algorithm.meta.modes ?? ['encrypt', 'decrypt'];
@@ -20,14 +20,15 @@ test('final site exposes exactly thirteen classical and modern modules', () => {
   }
 });
 
-test('all eight classical modules still encrypt, decrypt, and animate', () => {
+test('all nine classical modules still encrypt, decrypt, and animate', () => {
   const cases = [
     ['caesar', 'HELLO', { shift: 3 }, 'KHOOR', 'HELLO'],
     ['affine', 'AFFINECIPHER', { a: 5, b: 8 }, 'IHHWVCSWFRCP', 'AFFINECIPHER'],
     ['vigenere', 'ATTACKATDAWN', { keyword: 'LEMON' }, 'LXFOPVEFRNHR', 'ATTACKATDAWN'],
     ['playfair', 'HIDETHEGOLDINTHETREESTUMP', { keyword: 'PLAYFAIR EXAMPLE' }, 'BMODZBXDNABEKUDMUIXMMOUVIF', 'HIDETHEGOLDINTHETREXESTUMP'],
     ['hill', 'HELP', { m00: 3, m01: 3, m10: 2, m11: 5 }, 'HIAT', 'HELP'],
-    ['columnar', 'WEAREDISCOVERED', { keyword: 'CAB' }, 'EESVEADCEDWRIOR', 'WEAREDISCOVERED'],
+    ['periodic', 'CRYPTOGRAPHY', { key: 351642 }, 'YTCOPRAHGYPR', 'CRYPTOGRAPHY'],
+    ['columnar', 'WEAREDISCOVERED', { key: 312 }, 'ADCEDWRIOREESVE', 'WEAREDISCOVERED'],
     ['otp', 'HELLO', { keyword: 'XMCKL' }, 'EQNVZ', 'HELLO'],
     ['rotor', 'SECRETMESSAGE', { positions: 'AAA' }, null, 'SECRETMESSAGE']
   ];
@@ -40,6 +41,21 @@ test('all eight classical modules still encrypt, decrypt, and animate', () => {
     assert.ok(decrypted.steps.length > 0, `${id} should produce decryption steps`);
     assert.equal(decrypted.output, expectedPlain);
   }
+});
+
+test('columnar transposition presents its permutation as a numeric key', () => {
+  const page = renderAlgorithmPage(getAlgorithm('columnar'));
+  assert.match(page, /data-label-encrypt="置换密钥 σ"/);
+  assert.match(page, /data-label-decrypt="原置换密钥 σ"/);
+  assert.match(page, /<input name="key" type="number" value="312"/);
+});
+
+test('columnar decryption shows its derived inverse alongside the plaintext result', () => {
+  const algorithm = getAlgorithm('columnar');
+  const decrypted = algorithm.decrypt('ADCEDWRIOREESVE', { key: 312 });
+  assert.equal(decrypted.resultDetail, '逆置换 σ⁻¹：231');
+  assert.equal(algorithm.encrypt('WEAREDISCOVERED', { key: 312 }).resultDetail, undefined);
+  assert.match(renderAlgorithmPage(algorithm), /id="result-detail" hidden/);
 });
 
 test('modern encryption modules round trip and hash modules match abc vectors', () => {
@@ -60,8 +76,8 @@ test('modern encryption modules round trip and hash modules match abc vectors', 
 
 test('intro and every module render complete teaching UI', () => {
   const intro = renderIntro(algorithms);
-  assert.match(intro, /<strong>13<\/strong><span>交互实验<\/span>/);
-  assert.equal((intro.match(/class="algorithm-card"/g) ?? []).length, 13);
+  assert.match(intro, /<strong>14<\/strong><span>交互实验<\/span>/);
+  assert.equal((intro.match(/class="algorithm-card"/g) ?? []).length, 14);
   for (const algorithm of algorithms) {
     const page = renderAlgorithmPage(algorithm);
     assert.match(page, new RegExp(algorithm.meta.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
@@ -91,7 +107,7 @@ test('release completion matrix covers every modern-extension criterion', () => 
   const packageJson = JSON.parse(readFileSync(resolve(siteRoot, '../package.json'), 'utf8'));
   const modernIds = ['aes', 'rsa', 'rc4', 'sha256', 'md5'];
   const criteria = [
-    ['13 catalog routes', () => assert.deepEqual(algorithms.map(({ meta }) => meta.id), expectedIds)],
+    ['14 catalog routes', () => assert.deepEqual(algorithms.map(({ meta }) => meta.id), expectedIds)],
     ['five modern operations', () => modernIds.forEach((id) => {
       const algorithm = getAlgorithm(id);
       assert.equal(typeof algorithm[algorithm.meta.modes[0]], 'function');

@@ -164,7 +164,7 @@ export function decryptBlock(blockBytes, keyBytes) {
 
 
 export const meta = {
-  id: 'aes', title: 'AES-128', code: '09', category: '现代分组密码', difficulty: '进阶',
+  id: 'aes', title: 'AES-128', code: '10', category: '现代分组密码', difficulty: '进阶',
   modes: ['encrypt', 'decrypt'], showPreserveOption: false,
   summary: '以 128 位分组和 128 位密钥展示 AES 的十轮字节与矩阵变换。',
   formula: 'Stateᵣ = Round(Stateᵣ₋₁, Kᵣ)',

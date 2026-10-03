@@ -171,7 +171,7 @@ export function md5Bytes(bytes, withSteps = false) {
 }
 
 export const meta = {
-  id: 'md5', title: 'MD5', code: '13', category: '现代哈希函数', difficulty: '进阶',
+  id: 'md5', title: 'MD5', code: '14', category: '现代哈希函数', difficulty: '进阶',
   modes: ['hash'], showPreserveOption: false,
   summary: '观察 MD5 的小端填充、四轮布尔函数与 64 次寄存器操作。',
   formula: 'Stateᵢ = Compress(Stateᵢ₋₁, Mᵢ)',

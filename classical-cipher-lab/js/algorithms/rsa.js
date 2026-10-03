@@ -64,7 +64,7 @@ export function decryptNumber(cipher, privateKey) {
 }
 
 export const meta = {
-  id: 'rsa', title: 'RSA', code: '10', category: '现代公钥密码', difficulty: '进阶',
+  id: 'rsa', title: 'RSA', code: '11', category: '现代公钥密码', difficulty: '进阶',
   modes: ['encrypt', 'decrypt'], showPreserveOption: false,
   summary: '用小素数逐字节演示 RSA 密钥生成和平方-乘模幂运算。',
   formula: 'c = mᵉ mod n，m = cᵈ mod n',

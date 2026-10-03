@@ -175,7 +175,7 @@ export function sha256Bytes(bytes, withSteps = false) {
 }
 
 export const meta = {
-  id: 'sha256', title: 'SHA-256', code: '12', category: '现代哈希函数', difficulty: '进阶',
+  id: 'sha256', title: 'SHA-256', code: '13', category: '现代哈希函数', difficulty: '进阶',
   modes: ['hash'], showPreserveOption: false,
   summary: '从消息填充、消息扩展到 64 轮压缩，完整观察 SHA-256 摘要生成。',
   formula: 'Hᵢ = Compress(Hᵢ₋₁, Mᵢ)',
